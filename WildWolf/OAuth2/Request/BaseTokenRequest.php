@@ -68,7 +68,7 @@ class BaseTokenRequest
     public function getAuthenticationData() : array
     {
         $data = $this->getAuthenticationDataFromServer();
-        if ($data) {
+        if (!empty($data)) {
             return $data;
         }
 
@@ -111,7 +111,7 @@ class BaseTokenRequest
     {
         $m = [];
         if (preg_match('/^basic\\s+(\\S+)/i', $auth, $m)) {
-            $auth = explode(':', base64_decode($m[1]), 2);
+            $auth = explode(':', (string)base64_decode($m[1]), 2);
             if (count($auth) == 2) {
                 return $auth;
             }

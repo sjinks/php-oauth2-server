@@ -57,7 +57,7 @@ class AuthorizeEndpoint implements AuthorizeEndpointInterface
     public function handleAuthorizeRequest(ResponseInterface $response, bool $deny = false) : ResponseInterface
     {
         if (!$this->validateRequest()) {
-            return $this->error($response, $this->error, $this->authorizer->getRedirectUri());
+            return $this->error($response, /** @scrutinizer ignore-type */ $this->error, $this->authorizer->getRedirectUri());
         }
 
         $uri = $this->authorizer->getRedirectUri();
@@ -109,7 +109,7 @@ class AuthorizeEndpoint implements AuthorizeEndpointInterface
      */
     protected function validateResponseType(string $rt = null) : bool
     {
-        if (!$rt) {
+        if (empty($rt)) {
             $this->error = new ErrorResponse('invalid_request', 'response_type parameter is absent or invalid.');
             return false;
         }
@@ -147,7 +147,7 @@ class AuthorizeEndpoint implements AuthorizeEndpointInterface
      */
     protected function validateRedirectUri(string $uri = null) : bool
     {
-        if ($uri) {
+        if (!empty($uri)) {
             $parts = parse_url($uri);
             if (false === $parts) {
                 $this->error = new ErrorResponse('invalid_request', 'redirect_uri is not a valid URI.');

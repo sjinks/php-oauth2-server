@@ -39,7 +39,5 @@ class Token implements ResponseTypeInterface
             . (isset($parts['query']) ? ('?' . $parts['query']) : '')
             . '#' . http_build_query($params)
         ;
-
-        return $uri . '#' . http_build_query($params);
     }
 }

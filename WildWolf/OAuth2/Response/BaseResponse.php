@@ -47,7 +47,7 @@ abstract class BaseResponse
             $response = $response->withHeader($k, $v);
         }
 
-        if ($uri) {
+        if (!empty($uri)) {
             $sep = $sep ?? ((false === strpos($uri, '?')) ? '?' : '&');
             return $response
                 ->withStatus(302)
