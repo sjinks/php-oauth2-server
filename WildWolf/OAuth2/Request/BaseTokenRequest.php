@@ -46,23 +46,21 @@ class BaseTokenRequest
     public function validate() : bool
     {
         return
-               $this->validateAuthenticationData()
+               !$this->hasMultipleAuthenticationData()
+            && $this->isClientIdAndSecretPresent()
             && !empty($this->grant_type)
         ;
     }
 
-    private function validateAuthenticationData() : bool
+    private function hasMultipleAuthenticationData() : bool
     {
         $data = $this->getAuthenticationDataFromServer();
-        if ($this->client_secret !== null && !empty($data)) {
-            return false;
-        }
+        return ($this->client_secret !== null && !empty($data));
+    }
 
-        if ($this->client_secret !== null && $this->client_id === null) {
-            return false;
-        }
-
-        return true;
+    private function isClientIdAndSecretPresent() : bool
+    {
+        return $this->client_secret === null || $this->client_id !== null;
     }
 
     public function getAuthenticationData() : array
@@ -104,7 +102,7 @@ class BaseTokenRequest
             $headers = array_change_key_case($headers, CASE_UPPER);
         }
 
-        return (isset($headers['AUTHORIZATION'])) ? trim($headers['AUTHORIZATION']) : null;
+        return $headers['AUTHORIZATION'] ?? null;
     }
 
     private static function parseAuthorizationHeader(string $auth = null) : array
