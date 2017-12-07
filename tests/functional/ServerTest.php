@@ -353,4 +353,26 @@ CREATE TABLE IF NOT EXISTS refresh_token (
         $this->assertArrayHasKey('token_type',    $params);
         $this->assertEquals('bearer', strtolower($params['token_type']));
     }
+
+    public function testIntegration_ImplicitFlow()
+    {
+        // Authorization Request
+        $get  = ['client_id' => 'client', 'response_type' => 'token', 'redirect_uri' => 'http://example.com/'];
+        $post = [];
+        $response = $this->sendRequest($get, $post, 'handleAuthorizeRequest', [false]);
+
+        $this->assertEquals(302, $response->getStatusCode());
+        $this->assertTrue($response->hasHeader('Location'));
+
+        $url    = $response->getHeaderLine('Location');
+        $part   = parse_url($url, PHP_URL_FRAGMENT);
+        $params = [];
+        parse_str($part, $params);
+
+        $this->assertArrayHasKey('access_token',  $params);
+        $this->assertArrayHasKey('expires_in',    $params);
+        $this->assertArrayNotHasKey('refresh_token', $params);
+        $this->assertArrayHasKey('token_type',    $params);
+        $this->assertEquals('bearer', strtolower($params['token_type']));
+    }
 }
