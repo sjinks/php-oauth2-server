@@ -1,0 +1,16 @@
+sudo: false
+
+language: php
+
+php:
+  - 7.0
+  - 7.1
+
+before_script:
+  - travis_retry composer update -a -o --prefer-dist
+
+script:
+  - vendor/bin/phpunit --coverage-clover coverage.xml
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
