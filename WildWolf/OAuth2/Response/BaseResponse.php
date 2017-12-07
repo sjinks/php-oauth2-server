@@ -46,7 +46,7 @@ abstract class BaseResponse
 
         return empty($uri)
             ? $this->createJson($response, $params)
-            : $this->createRedirect($response, $uri, $params)
+            : $this->createRedirect($response, $uri, $sep, $params)
         ;
     }
 
@@ -60,9 +60,9 @@ abstract class BaseResponse
         return $response;
     }
 
-    private function createRedirect(ResponseInterface $response, string $uri, array $params) : ResponseInterface
+    private function createRedirect(ResponseInterface $response, string $uri, $sep, array $params) : ResponseInterface
     {
-        $sep = ((string)parse_url($uri, PHP_URL_QUERY)) ? '&' : '?';
+        $sep = $sep ?? (((string)parse_url($uri, PHP_URL_QUERY)) ? '&' : '?');
         return $response
             ->withStatus(302)
             ->withHeader('Location', $uri . $sep . http_build_query($params))

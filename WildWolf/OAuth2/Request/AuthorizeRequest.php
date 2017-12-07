@@ -48,19 +48,23 @@ class AuthorizeRequest
         $result->scope         = $params['scope']         ?? null;
         $result->state         = $params['state']         ?? null;
 
-        /*
-         * Extension response types MAY contain a space-delimited (%x20) list of
-         * values, where the order of values does not matter (e.g., response
-         * type "a b" is the same as "b a").  The meaning of such composite
-         * response types is defined by their respective specifications.
-         */
-        if (false !== strpos($result->response_type, ' ')) {
-            $rt = explode(' ', $result->response_type);
-            sort($rt);
-            $result->response_type = join(' ', $rt);
-        }
-
+        $result->fixUpResponseType();
         return $result;
+    }
+
+    /*
+     * Extension response types MAY contain a space-delimited (%x20) list of
+     * values, where the order of values does not matter (e.g., response
+     * type "a b" is the same as "b a").  The meaning of such composite
+     * response types is defined by their respective specifications.
+     */
+    private function fixUpResponseType()
+    {
+        if (false !== strpos($this->response_type, ' ')) {
+            $rt = explode(' ', $this->response_type);
+            sort($rt);
+            $this->response_type = join(' ', $rt);
+        }
     }
 
     public function getRequest() : ServerRequestInterface
