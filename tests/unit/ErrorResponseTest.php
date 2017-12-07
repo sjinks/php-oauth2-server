@@ -22,6 +22,24 @@ class ErrorResponseTest extends TestCase
         $this->assertEmpty($er->getExtraHeaders());
         $this->assertEquals(400, $er->getStatusCode());
         $this->assertEquals($expected['error'], $er->getError());
+
+        if (isset($expected['error'])) {
+            $this->assertEquals($expected['error'], $er->getError());
+        }
+
+        if (isset($expected['error_description'])) {
+            $this->assertEquals($expected['error_description'], $er->getErrorDescription());
+        }
+        else {
+            $this->assertEquals('', $er->getErrorDescription());
+        }
+
+        if (isset($expected['error_uri'])) {
+            $this->assertEquals($expected['error_uri'], $er->getErrorUri());
+        }
+        else {
+            $this->assertEquals('', $er->getErrorUri());
+        }
     }
 
     public function creationDataProvider()

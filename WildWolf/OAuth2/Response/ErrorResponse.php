@@ -44,6 +44,6 @@ class ErrorResponse extends BaseResponse
 
     public function getErrorUri() : string
     {
-        return (string)$this->getErrorUri();
+        return (string)$this->error_uri;
     }
 }
