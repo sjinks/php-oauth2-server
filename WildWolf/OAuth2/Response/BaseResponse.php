@@ -41,29 +41,43 @@ abstract class BaseResponse
 
     public function toResponseInterface(ResponseInterface $response, array $extra = null, string $uri = null, string $sep = null) : ResponseInterface
     {
-        $arr = $this->toArray() + (array)$extra;
-        $h   = $this->getExtraHeaders();
+        $response = $this->withExtraHeaders($response);
+        $params   = $this->toArray() + (array)$extra;
+
+        return empty($uri)
+            ? $this->createJson($response, $params)
+            : $this->createRedirect($response, $uri, $params)
+        ;
+    }
+
+    private function withExtraHeaders(ResponseInterface $response) : ResponseInterface
+    {
+        $h = $this->getExtraHeaders();
         foreach ($h as $k => $v) {
             $response = $response->withHeader($k, $v);
         }
 
-        if (!empty($uri)) {
-            $sep = $sep ?? ((false === strpos($uri, '?')) ? '?' : '&');
-            return $response
-                ->withStatus(302)
-                ->withHeader('Location', $uri . $sep . http_build_query($arr))
-                ->withHeader('Pragma', 'no-cache')
-            ;
-        }
+        return $response;
+    }
 
-        $body = $response->getBody();
-        $body->write(json_encode($arr));
+    private function createRedirect(ResponseInterface $response, string $uri, array $params) : ResponseInterface
+    {
+        $sep = ((string)parse_url($uri, PHP_URL_QUERY)) ? '&' : '?';
+        return $response
+            ->withStatus(302)
+            ->withHeader('Location', $uri . $sep . http_build_query($params))
+            ->withHeader('Pragma', 'no-cache')
+        ;
+    }
+
+    private function createJson(ResponseInterface $response, array $params) : ResponseInterface
+    {
+        $response->getBody()->write(json_encode($params));
         return $response
             ->withStatus($this->getStatusCode())
             ->withHeader('Cache-Control', 'no-store')
             ->withHeader('Pragma', 'no-cache')
             ->withHeader('Content-Type', 'application/json; charset=UTF-8')
-            ->withBody($body)
         ;
     }
 }
