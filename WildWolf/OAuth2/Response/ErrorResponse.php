@@ -36,4 +36,14 @@ class ErrorResponse extends BaseResponse
     {
         return $this->error;
     }
+
+    public function getErrorDescription() : string
+    {
+        return (string)$this->error_description;
+    }
+
+    public function getErrorUri() : string
+    {
+        return (string)$this->getErrorUri();
+    }
 }

@@ -75,16 +75,6 @@ class AuthorizeEndpointTest extends TestCase
                 return parent::validateResponseType($rt);
             }
 
-            public function validateClientId(string $cid = null) : bool
-            {
-                return parent::validateClientId($cid);
-            }
-
-            public function validateRedirectUri(string $uri = null) : bool
-            {
-                return parent::validateRedirectUri($uri);
-            }
-
             public function setAuthorizeRequest(AuthorizeRequest $req)
             {
                 $this->authRequest = $req;
@@ -117,74 +107,8 @@ class AuthorizeEndpointTest extends TestCase
     public function validateResponseTypeDataProvider()
     {
         return [
-            [null, false, 'invalid_request'],
-            ['',   false, 'invalid_request'],
             ['xx', false, 'unsupported_response_type'],
             ['ok', true,  '']
-        ];
-    }
-
-    /**
-     * @dataProvider validateClientIdDataProvider
-     * @param string|null $cid
-     * @param bool $success
-     * @param string $error
-     */
-    public function testValidateClientId($cid, bool $success, string $error)
-    {
-        $ae     = self::getAE();
-        $actual = $ae->validateClientId($cid);
-
-        $this->assertEquals($success, $actual);
-        if (!$success) {
-            $e = $ae->getErrorResponse();
-
-            $this->assertNotNull($actual);
-            $this->assertInstanceOf(ErrorResponse::class, $e);
-
-            $this->assertEquals($error, $e->getError());
-        }
-    }
-
-    public function validateClientIdDataProvider()
-    {
-        return [
-            [null, false, 'invalid_request'],
-            ['',   false, 'invalid_request'],
-            ['ok', true,  '']
-        ];
-    }
-
-    /**
-     * @dataProvider validateRedirectUriDataProvider
-     * @param string|null $uri
-     * @param bool $success
-     * @param string $error
-     */
-    public function testValidateRedirectUri($uri, bool $success, string $error)
-    {
-        $ae     = self::getAE();
-        $actual = $ae->validateRedirectUri($uri);
-
-        $this->assertEquals($success, $actual);
-        if (!$success) {
-            $e = $ae->getErrorResponse();
-
-            $this->assertNotNull($actual);
-            $this->assertInstanceOf(ErrorResponse::class, $e);
-
-            $this->assertEquals($error, $e->getError());
-        }
-    }
-
-    public function validateRedirectUriDataProvider()
-    {
-        return [
-            [null,                    true,   ''],
-            ['',                      true,   ''],
-            [':',                     false,  'invalid_request'],
-            ['/',                     false,  'invalid_request'],
-            ['http://example.com/#x', false,  'invalid_request']
         ];
     }
 

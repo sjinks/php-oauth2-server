@@ -82,24 +82,25 @@ class AuthorizeEndpoint implements AuthorizeEndpointInterface
     public function validateRequest() : bool
     {
         $this->error = null;
-        $this->authorizer->initializeAuthorizer($this->authRequest);
+        $request     = $this->authRequest;
+        $this->authorizer->initializeAuthorizer($request);
 
-        $res =
-               $this->validateClientId($this->authRequest->getClientId())
-            && $this->validateRedirectUri($this->authRequest->getRedirectUri())
-            && $this->validateResponseType($this->authRequest->getResponseType())
-        ;
+        $res = $request->validate();
+        if (true !== $res) {
+            $this->error = $res;
+            return false;
+        }
 
-        if (false === $res) {
-            return $res;
+        if (!$this->validateResponseType($request->getResponseType())) {
+            return false;
         }
 
         if (!$this->authorizer->validateAuthorizeRequest()) {
-            $res = false;
             $this->error = $this->authorizer->getAuthorizerValidationError();
+            return false;
         }
 
-        return $res;
+        return true;
     }
 
     /**
@@ -107,13 +108,8 @@ class AuthorizeEndpoint implements AuthorizeEndpointInterface
      * @return bool
      * @see https://tools.ietf.org/html/rfc6749#section-3.1.1
      */
-    protected function validateResponseType(string $rt = null) : bool
+    protected function validateResponseType(string $rt) : bool
     {
-        if (empty($rt)) {
-            $this->error = new ErrorResponse('invalid_request', 'response_type parameter is absent or invalid.');
-            return false;
-        }
-
         if (!isset($this->rt_handlers[$rt])) {
             $this->error = new ErrorResponse(
                 'unsupported_response_type',
@@ -121,50 +117,6 @@ class AuthorizeEndpoint implements AuthorizeEndpointInterface
             );
 
             return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * @param string $cid
-     * @return bool
-     */
-    protected function validateClientId(string $cid = null) : bool
-    {
-        if (empty($cid)) {
-            $this->error = new ErrorResponse('invalid_request', 'client_id parameter is absent or invalid.');
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * @param string $uri
-     * @return bool
-     * @see https://tools.ietf.org/html/rfc6749#section-3.1.2
-     */
-    protected function validateRedirectUri(string $uri = null) : bool
-    {
-        if (!empty($uri)) {
-            $parts = parse_url($uri);
-            if (false === $parts) {
-                $this->error = new ErrorResponse('invalid_request', 'redirect_uri is not a valid URI.');
-                return false;
-            }
-
-            // The redirection endpoint URI MUST be an absolute URI
-            if (empty($parts['scheme']) || empty($parts['host'])) {
-                $this->error = new ErrorResponse('invalid_request', 'redirect_uri is not an absolute URI.');
-                return false;
-            }
-
-            // The endpoint URI MUST NOT include a fragment component.
-            if (!empty($parts['fragment'])) {
-                $this->error = new ErrorResponse('invalid_request', 'redirect_uri must not contain a fragment component.');
-                return false;
-            }
         }
 
         return true;

@@ -5,6 +5,7 @@ namespace Test;
 use PHPUnit\Framework\TestCase;
 use Zend\Diactoros\ServerRequestFactory;
 use WildWolf\OAuth2\Request\AuthorizeRequest;
+use WildWolf\OAuth2\Response\ErrorResponse;
 
 class AuthorizeRequestTest extends TestCase
 {
@@ -79,6 +80,135 @@ class AuthorizeRequestTest extends TestCase
                     'scope'         => null,
                     'state'         => null,
                 ]
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider validateDataProvider
+     * @param array $in
+     * @param array $expected
+     */
+    public function testValidate(array $in, array $expected)
+    {
+        $request = ServerRequestFactory::fromGlobals([], $in);
+        $ar      = AuthorizeRequest::fromServerRequest($request);
+
+        $result  = $ar->validate();
+
+        if ($expected[0] === true) {
+            $this->assertSame(true, $result);
+        }
+        else {
+            $this->assertInstanceOf(ErrorResponse::class, $result);
+            $this->assertEquals($expected[1], $result->getError());
+            $this->assertEquals($expected[2], $result->getErrorDescription());
+        }
+    }
+
+    public function validateDataProvider()
+    {
+        return [
+            // Response Type
+            [
+                [
+                    'client_id'     => 'client',
+                    'redirect_uri'  => 'http://example.com/',
+                    'scope'         => 'scope',
+                    'state'         => 'state',
+                ],
+                [false, 'invalid_request', 'response_type parameter is absent or invalid.']
+            ],
+            [
+                [
+                    'response_type' => '',
+                    'client_id'     => 'client',
+                    'redirect_uri'  => 'http://example.com/',
+                    'scope'         => 'scope',
+                    'state'         => 'state',
+                ],
+                [false, 'invalid_request', 'response_type parameter is absent or invalid.']
+            ],
+            // Client ID
+            [
+                [
+                    'response_type' => 'token',
+                    'redirect_uri'  => 'http://example.com/',
+                    'scope'         => 'scope',
+                    'state'         => 'state',
+                ],
+                [false, 'invalid_request', 'client_id parameter is absent or invalid.']
+            ],
+            [
+                [
+                    'response_type' => 'token',
+                    'client_id'     => '',
+                    'redirect_uri'  => 'http://example.com/',
+                    'scope'         => 'scope',
+                    'state'         => 'state',
+                ],
+                [false, 'invalid_request', 'client_id parameter is absent or invalid.']
+            ],
+            // Redirect URI
+            [
+                [
+                    'response_type' => 'token code',
+                    'client_id'     => 'client',
+                    'scope'         => 'scope',
+                    'state'         => 'state',
+                ],
+                [true]
+            ],
+            [
+                [
+                    'response_type' => 'token code',
+                    'client_id'     => 'client',
+                    'redirect_uri'  => '',
+                    'scope'         => 'scope',
+                    'state'         => 'state',
+                ],
+                [true]
+            ],
+            [
+                [
+                    'response_type' => 'token code',
+                    'client_id'     => 'client',
+                    'redirect_uri'  => ':',
+                    'scope'         => 'scope',
+                    'state'         => 'state',
+                ],
+                [false, 'invalid_request', 'redirect_uri is not a valid URI.']
+            ],
+            [
+                [
+                    'response_type' => 'token code',
+                    'client_id'     => 'client',
+                    'redirect_uri'  => '/path',
+                    'scope'         => 'scope',
+                    'state'         => 'state',
+                ],
+                [false, 'invalid_request', 'redirect_uri is not an absolute URI.']
+            ],
+            [
+                [
+                    'response_type' => 'token code',
+                    'client_id'     => 'client',
+                    'redirect_uri'  => 'http://example.com/path#fragment',
+                    'scope'         => 'scope',
+                    'state'         => 'state',
+                ],
+                [false, 'invalid_request', 'redirect_uri must not contain a fragment component.']
+            ],
+            // OK
+            [
+                [
+                    'response_type' => 'token code',
+                    'client_id'     => 'client',
+                    'redirect_uri'  => 'http://example.com/',
+                    'scope'         => 'scope',
+                    'state'         => 'state',
+                ],
+                [true]
             ]
         ];
     }
