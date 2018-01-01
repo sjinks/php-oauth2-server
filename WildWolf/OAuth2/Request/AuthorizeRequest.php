@@ -52,6 +52,7 @@ class AuthorizeRequest
         $result->state         = $params['state']         ?? null;
 
         $result->fixUpResponseType();
+        $result->fixUpScope();
         return $result;
     }
 
@@ -67,6 +68,22 @@ class AuthorizeRequest
             $rt = explode(' ', $this->response_type);
             sort($rt);
             $this->response_type = join(' ', $rt);
+        }
+    }
+
+    /*
+     * The value of the scope parameter is expressed as a list of space-
+     * delimited, case-sensitive strings.  The strings are defined by the
+     * authorization server.  If the value contains multiple space-delimited
+     * strings, their order does not matter, and each string adds an
+     * additional access range to the requested scope.
+     */
+    private function fixUpScope()
+    {
+        if (false !== strpos($this->scope, ' ')) {
+            $s = explode(' ', $this->scope);
+            sort($s);
+            $this->scope = join(' ', $s);
         }
     }
 
