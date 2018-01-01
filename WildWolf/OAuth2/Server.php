@@ -150,6 +150,9 @@ class Server
         return $ep->getError($this->response);
     }
 
+    /**
+     * @return \Psr\Http\Message\ResponseInterface
+     */
     public function handleTokenRequest()
     {
         $ep = $this->getTokenEndpoint();
