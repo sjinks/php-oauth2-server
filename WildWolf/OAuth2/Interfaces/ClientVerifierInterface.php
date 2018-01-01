@@ -7,6 +7,9 @@ use WildWolf\OAuth2\Response\ErrorResponse;
 
 interface ClientVerifierInterface
 {
-    public function verifyClient(BaseTokenRequest $request) : bool;
-    public function getClientVerificationError() : ErrorResponse;
+    /**
+     * @param BaseTokenRequest $request
+     * @return bool|ErrorResponse
+     */
+    public function verifyClient(BaseTokenRequest $request);
 }

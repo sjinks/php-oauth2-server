@@ -18,20 +18,13 @@ class AuthTokenGenerator implements TokenGeneratorInterface, ClientVerifierInter
      */
     private $pdo;
 
-    /**
-     * @var ErrorResponse|null
-     */
-    private $error = null;
-
     public function __construct(\PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
-    public function verifyClient(BaseTokenRequest $request) : bool
+    public function verifyClient(BaseTokenRequest $request)
     {
-        $this->error = null;
-
         $auth = $request->getAuthenticationData();
         if ($auth) {
             list($client, $secret) = $auth;
@@ -39,19 +32,14 @@ class AuthTokenGenerator implements TokenGeneratorInterface, ClientVerifierInter
             $stmt = $this->pdo->prepare("SELECT 0 FROM client_secret WHERE client_id = ? AND client_secret = ?");
             $stmt->execute([$client, $secret]);
             if ($stmt->fetch() === false) {
-                $this->error = new ErrorResponse('invalid_client');
-                $this->error->setStatusCode(401);
-                $this->error->setHeader('WWW-Authenticate', 'basic realm="Area 51"');
-                return false;
+                $error = new ErrorResponse('invalid_client');
+                $error->setStatusCode(401);
+                $error->setHeader('WWW-Authenticate', 'basic realm="Area 51"');
+                return $error;
             }
         }
 
         return true;
-    }
-
-    public function getClientVerificationError() : ErrorResponse
-    {
-        return $this->error;
     }
 
     public function generateAccessToken(BaseTokenRequest $req) : BaseResponse

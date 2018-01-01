@@ -29,14 +29,9 @@ class DefaultGrantTypeHandlerTest extends TestCase
     {
         return new class implements ClientVerifierInterface
         {
-            public function verifyClient(BaseTokenRequest $request) : bool
+            public function verifyClient(BaseTokenRequest $request)
             {
                 return true;
-            }
-
-            public function getClientVerificationError() : ErrorResponse
-            {
-                return new ErrorResponse('server_error');
             }
         };
     }
@@ -50,24 +45,11 @@ class DefaultGrantTypeHandlerTest extends TestCase
                 return new AccessTokenResponse('ABCD');
             }
 
-            public function verifyClient(BaseTokenRequest $request) : bool
-            {
-                return false;
-            }
-
-            public function getClientVerificationError() : ErrorResponse
+            public function verifyClient(BaseTokenRequest $request)
             {
                 return new ErrorResponse('server_error');
             }
         };
-    }
-
-    /**
-     * @expectedException \LogicException
-     */
-    public function testCreateException()
-    {
-        new DefaultGrantTypeHandler(self::getTGI());
     }
 
     public function testCreateSeparateInterfaces()

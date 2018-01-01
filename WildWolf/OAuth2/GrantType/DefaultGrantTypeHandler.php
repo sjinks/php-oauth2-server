@@ -13,12 +13,12 @@ class DefaultGrantTypeHandler implements GrantTypeInterface
     /**
      * @var TokenGeneratorInterface
      */
-    private $generator;
+    protected $generator;
 
     /**
-     * @var ClientVerifierInterface
+     * @var ClientVerifierInterface|null
      */
-    private $verifier;
+    protected $verifier;
 
     public function __construct(TokenGeneratorInterface $generator, ClientVerifierInterface $verifier = null)
     {
@@ -28,9 +28,6 @@ class DefaultGrantTypeHandler implements GrantTypeInterface
             if ($generator instanceof ClientVerifierInterface) {
                 $this->verifier = $generator;
             }
-            else {
-                throw new \LogicException("No ClientVerifierInterface is available");
-            }
         }
         else {
             $this->verifier = $verifier;
@@ -39,8 +36,11 @@ class DefaultGrantTypeHandler implements GrantTypeInterface
 
     public function generateAccessToken(BaseTokenRequest $request) : BaseResponse
     {
-        if (!$this->verifier->verifyClient($request)) {
-            return $this->verifier->getClientVerificationError();
+        if ($this->verifier) {
+            $res = $this->verifier->verifyClient($request);
+            if (true !== $res) {
+                return $res;
+            }
         }
 
         return $this->generator->generateAccessToken($request);
